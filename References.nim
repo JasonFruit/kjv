@@ -1,5 +1,7 @@
 import BibleInfo
 
+type InvalidVerseError* = object of ValueError
+
 type VerseReference* = object
   book*, chapter*, verse*: int
   
@@ -66,3 +68,9 @@ proc valid*(rref: RangeReference): bool =
             (rref.startRef < rref.endRef or
              rref.startRef == rref.endRef))
 
+proc addVerses*(vref: VerseReference, verses: int): VerseReference =
+  var vID = verseID(vref.book, vref.chapter, vref.verse)
+  var (book, chapter, verse) = verseInfoByID(vID + verses)
+  result = VerseReference(book: book,
+                          chapter: chapter,
+                          verse: verse)
