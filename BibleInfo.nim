@@ -79,7 +79,7 @@ proc verseID*(bookID, chapterNum, verseNum: int): int =
   var cmd = sql("select rowid from KJV where book_id = ? and chapter_num = ? and verse_num = ?;")
   result = parseInt(getValue(conn, cmd, bookID, chapterNum, verseNum))
 
-proc verseInfoByID*(verseID: int): auto =
+proc verseInfoByID*(verseID: int): tuple[book, chapter, verse: int] =
   var cmd = sql("select book_id, chapter_num, verse_num from KJV where rowid = ?")
   var row = getRow(conn, cmd, verseID)
   result = (parseInt(row[0]), parseInt(row[1]), parseInt(row[2]))
