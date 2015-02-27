@@ -1,5 +1,6 @@
 import db_sqlite
 import strutils
+import BibleErrors
 
 type
   Book* = object
@@ -22,7 +23,10 @@ proc books*(): seq[Book] =
 
 proc chapters*(bookID: int): int =
   var cmd = sql("select max(chapter_num) from chapters where book_id = ?")
-  result = parseInt(getValue(conn, cmd, bookID))
+  try:
+    result = parseInt(getValue(conn, cmd, bookID))
+  except ValueError:
+    raise InvalidBookError(msg: "Invalid book: " & $bookID)
 
 proc verses*(bookID, chapterNum: int): int =
   var cmd = sql("select verses from chapters where book_id = ? and chapter_num = ?")

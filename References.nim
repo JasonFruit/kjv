@@ -1,6 +1,5 @@
 import BibleInfo
-
-type InvalidVerseError* = object of ValueError
+import BibleErrors
 
 type VerseReference* = object
   book*, chapter*, verse*: int
@@ -81,3 +80,29 @@ proc subtractVerses*(vref: VerseReference, verses: int): VerseReference =
   result = VerseReference(book: verseInfo.book,
                           chapter: verseInfo.chapter,
                           verse: verseInfo.verse)
+
+proc addChapters*(vref: VerseReference, chapterDiff: int): VerseReference =
+  var (book, chapter, verse) = (vref.book, vref.chapter, vref.verse)
+  if chapter + chapterDiff <= chapters(book):
+    var new_verse: int
+    if verse <= verses(book, chapter + chapterDiff):
+      new_verse = verse
+    else:
+      new_verse = verses(book, chapter + chapterDiff)
+    result = VerseReference(book: book,
+                            chapter: chapter + chapterDiff,
+                            verse: new_verse)
+  else:
+    var dist_to_end = chapters(book) - chapter
+    result = addChapters(VerseReference(verse: verse, 
+                                        chapter: 1, 
+                                        book: book + 1),
+                         chapterDiff - dist_to_end)
+  if not result.valid:
+    if bookExists(result.book) and chapterExists(result.book, result.chapter):
+      result = VerseReference(verse: verses(result.book, result.chapter),
+                              chapter: result.chapter,
+                              book: result.book)
+    else:
+      raise InvalidVerseError(msg: "Unable to add " & $chapterDiff & " chapters to " & $vref)
+      
