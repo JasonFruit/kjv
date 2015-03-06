@@ -1,4 +1,5 @@
 import References
+import BibleErrors
 
 var
   vref: VerseReference = VerseReference(book: 1,
@@ -7,12 +8,26 @@ var
   vref2: VerseReference = vref.addVerses(1105)
   vref3: VerseReference = vref2.subtractVerses(1104)
   vref4: VerseReference = vref2.addChapters(30)
-echo(vref2)
-echo(vref3)  
+
+echo($vref2)
+echo(vref3)
 echo(vref4)
 
 var revelationSixSix = VerseReference(book: 66,
                                       verse: 6,
                                       chapter: 6)
 
-echo(revelationSixSix.addChapters(20))
+try:
+  echo(revelationSixSix.addChapters(20))
+except InvalidBookError:
+  echo("Expected error encountered.")
+
+try:
+  echo(vref.subtractVerses(7))
+except InvalidReferenceError:
+  echo("Expected error encountered.")
+
+echo(vref2.subtractChapters(2))
+
+echo("This should not fail, but does.  Fix it.")
+echo(vref4.subtractChapters(7))

@@ -3,13 +3,13 @@ import BibleErrors
 
 type VerseReference* = object
   book*, chapter*, verse*: int
-  
+
 type RangeReference* = object
   startRef*, endRef*: VerseReference
 
 proc `$`*(vref: VerseReference): string =
   result = bookName(vref.book) & " " & $vref.chapter & ":" & $vref.verse
-  
+
 proc `$`*(rref: RangeReference): string =
   result = $rref.startRef & "-" & $rref.endRef
 
@@ -30,8 +30,8 @@ proc `<`*(a, b: VerseReference): bool =
       return a.chapter < b.chapter
     else:
       return a.verse < b.verse
-      
-proc `==`*(a, b: VerseReference): bool = 
+
+proc `==`*(a, b: VerseReference): bool =
   result = (a.book == b.book and
             a.chapter == b.chapter and
             a.verse == b.verse)
@@ -58,7 +58,7 @@ proc overlaps*(a, b: RangeReference): bool =
            (b.endRef >= a.startRef and
             b.endRef <= a.endRef)
 
-proc valid*(vref: VerseReference): bool = 
+proc valid*(vref: VerseReference): bool =
   result = verseExists(vref.book, vref.chapter, vref.verse)
 
 proc valid*(rref: RangeReference): bool =
@@ -75,11 +75,23 @@ proc addVerses*(vref: VerseReference, verses: int): VerseReference =
                           verse: verseInfo.verse)
 
 proc subtractVerses*(vref: VerseReference, verses: int): VerseReference =
+
   var vID = verseID(vref.book, vref.chapter, vref.verse)
-  var verseInfo = verseInfoByID(vID - verses)
+
+  var verseInfo: VerseInfo
+  # if the subtraction ends in a non-existent verseID, an InvalidVerseError will be raised;
+  # we should change that to an InvalidReferenceError
+  try:
+    verseInfo = verseInfoByID(vID - verses)
+  except InvalidVerseError:
+    raise InvalidReferenceError(msg: "Unable to subtract " & $verses & " verses from " & $vref & ".")
+
   result = VerseReference(book: verseInfo.book,
                           chapter: verseInfo.chapter,
                           verse: verseInfo.verse)
+
+  if not result.valid:
+    raise InvalidReferenceError(msg: "Unable to subtract " & $verses & " verses from " & $vref & ".")
 
 proc addChapters*(vref: VerseReference, chapterDiff: int): VerseReference =
   var (book, chapter, verse) = (vref.book, vref.chapter, vref.verse)
@@ -94,10 +106,12 @@ proc addChapters*(vref: VerseReference, chapterDiff: int): VerseReference =
                             verse: new_verse)
   else:
     var dist_to_end = chapters(book) - chapter
-    result = addChapters(VerseReference(verse: verse, 
-                                        chapter: 1, 
-                                        book: book + 1),
-                         chapterDiff - dist_to_end)
+    # return rather than result= because we want validation to happen only on
+    # the final recursion
+    return addChapters(VerseReference(verse: verse,
+                                      chapter: 1,
+                                      book: book + 1),
+                       chapterDiff - dist_to_end)
   if not result.valid:
     if bookExists(result.book) and chapterExists(result.book, result.chapter):
       result = VerseReference(verse: verses(result.book, result.chapter),
@@ -105,4 +119,28 @@ proc addChapters*(vref: VerseReference, chapterDiff: int): VerseReference =
                               book: result.book)
     else:
       raise InvalidVerseError(msg: "Unable to add " & $chapterDiff & " chapters to " & $vref)
-      
+
+proc subtractChapters*(vref: VerseReference, chapterDiff: int): VerseReference =
+  if vref.chapter > chapterDiff:
+    result = VerseReference(book: vref.book,
+                            chapter: vref.chapter - chapterDiff,
+                            verse: vref.verse)
+  else:
+    var book, chapter: int
+    try:
+      book = vref.book - 1
+      chapter = chapters(book)
+      return subtractChapters(VerseReference(book: book,
+                                             chapter: chapter,
+                                             verse: verses(book, chapter)),
+                              chapterDiff - vref.chapter)
+    except InvalidVerseError, InvalidBookError:
+      raise InvalidVerseError(msg: "Unable to subtract " & $chapterDiff & " chapter from " & $vref & ".")
+
+  if not result.valid:
+    if bookExists(result.book):
+      raise InvalidVerseError(msg: "Unable to subtract " & $chapterDiff & " chapter from " & $vref & ".")
+    else:
+      result = VerseReference(book: result.book,
+                              chapter: result.chapter,
+                              verse: verses(result.book, result.chapter))
