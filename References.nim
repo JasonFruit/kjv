@@ -94,7 +94,13 @@ proc subtractVerses*(vref: VerseReference, verses: int): VerseReference =
     raise InvalidReferenceError(msg: "Unable to subtract " & $verses & " verses from " & $vref & ".")
 
 proc addChapters*(vref: VerseReference, chapterDiff: int): VerseReference =
-  var lastChapter = chapters(vref.book)
+  var lastChapter: int
+
+  try:
+    lastChapter = chapters(vref.book)
+  except InvalidBookError:
+    raise InvalidReferenceError(msg: "Unable to add chapters past end of Bible.")
+
   if lastChapter >= vref.chapter + chapterDiff:
     result = VerseReference(book: vref.book,
                             chapter: vref.chapter + chapterDiff,
