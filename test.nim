@@ -3,31 +3,12 @@ import BibleErrors
 
 var
   vref: VerseReference = VerseReference(book: 1,
-                                        chapter: 1,
-                                        verse: 1)
-  vref2: VerseReference = vref.addVerses(1105)
-  vref3: VerseReference = vref2.subtractVerses(1104)
-  vref4: VerseReference = vref2.addChapters(30)
+                                        chapter: 49,
+                                        verse: 33)
+  diff = 0
+  vref2: VerseReference = vref.addChapters(diff)
+  vref3: VerseReference = vref2.subtractChapters(diff)
 
-echo($vref2)
-echo(vref3)
-echo(vref4)
-
-var revelationSixSix = VerseReference(book: 66,
-                                      verse: 6,
-                                      chapter: 6)
-
-try:
-  echo(revelationSixSix.addChapters(20))
-except InvalidBookError:
-  echo("Expected error encountered.")
-
-try:
-  echo(vref.subtractVerses(7))
-except InvalidReferenceError:
-  echo("Expected error encountered.")
-
-echo(vref2.subtractChapters(2))
-
-echo("This should not fail, but does.  Fix it.")
-echo(vref4.subtractChapters(7))
+echo("Start with " & $vref & ".")
+echo("Add " & $diff & " chapters to get " & $vref2 & ".")
+echo("Subtract " & $diff & " chapters to get back to " & $vref3 & ".")
