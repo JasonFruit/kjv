@@ -43,6 +43,10 @@ proc bookName*(bookID: int): string =
   var cmd = sql("select name from books where id = ?")
   result = getValue(conn, cmd, bookID)
 
+proc bookName*(informal: string): string =
+  var cmd = sql("select formal from book_abbrevs where informal = ?")
+  result = getValue(conn, cmd, informal.toLower())
+
 proc chapters*(bookName: string): int =
   result = chapters(bookID(bookName))
 
