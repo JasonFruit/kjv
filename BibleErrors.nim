@@ -5,3 +5,5 @@ type InvalidChapterError* = ref object of ValueError
 type InvalidBookError* = ref object of ValueError
 
 type InvalidReferenceError* = ref object of ValueError
+
+type InvalidReferenceMathError* = ref object of ValueError
