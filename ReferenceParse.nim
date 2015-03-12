@@ -1,14 +1,9 @@
 import References, BibleErrors, BibleInfo, strutils
 
-proc ParseVerseReference*(s: string): VerseReference =
+proc extractBook(s: string): auto =
   var bookEnd: int = 0
   var book, rest: string
-  var chapterAndVerse: seq[string]
-  var chapter, verse: int
-
-  if not s.contains(":"):
-    raise InvalidReferenceError(msg: "Unable to parse reference: '" & s & "'.")
-    
+  
   for i in 0..s.len:
     if s[i] in 'A'..'z':
       bookEnd = i
@@ -22,11 +17,27 @@ proc ParseVerseReference*(s: string): VerseReference =
     
   rest = s[bookEnd + 1..s.len - 1].strip()
 
-  chapterAndVerse = rest.split(":")
+  result = (book, rest)
 
-  chapter = parseInt(chapterAndVerse[0])
-  verse = parseInt(chapterAndVerse[1])
+proc extractChapterAndVerse(s: string): auto =
+  var elems = s.split(":")
+  result = (parseInt(elems[0]), parseInt(elems[1]))
+  
+proc parseVerseReference*(s: string): VerseReference =
+  var chapterAndVerse: seq[string]
+
+  if not s.contains(":"):
+    raise InvalidReferenceError(msg: "Unable to parse reference: '" & s & "'.")
+    
+  var (book, rest) = extractBook(s)
+  var (chapter, verse) = extractChapterAndVerse(rest)
   
   return VerseReference(book: bookID(book),
                         chapter: chapter,
                         verse: verse)
+
+proc parseRangeReference*(s: string): RangeReference =
+  if s.contains("-"):
+    discard("")
+  else:
+    discard("")
