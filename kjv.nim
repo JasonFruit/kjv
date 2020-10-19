@@ -236,6 +236,63 @@ proc parseRef(rf: string): Ref =
   else:
     return parseVerseRef(rf)
 
+proc searchForWords(q: string): seq[string] =
+  var qs = """
+select name || ' ' || chapter || ':' || verse
+from bible b 
+inner join book bk 
+on b.book_id = bk.id 
+where b.id in (select id from bible where content like '%"""
+
+  var cleanQ: string = q.toLower();
+
+  for c in "!&():;'\",.?":
+    cleanQ = cleanQ.replace($c, "%");
+  
+  qs = qs & cleanQ.strip().replace(" ", "%') and b.id in (select id from bible where content like '%")
+
+  qs = qs & "%') order by book_id, chapter, verse"
+  
+
+  var rows = db.getAllRows(sql(qs))
+
+  var res: seq[string]
+  for row in rows:
+    res.add(row[0])
+
+  return res
+
+proc searchForPhrase(q: string): seq[string] =
+  var qs = """
+
+
+select name || ' ' || chapter || ':' || verse
+from bible b 
+inner join book bk 
+on b.book_id = bk.id 
+where replace(replace(replace(replace(content, ',', ''), '.', ''), ';', ''), ':', '') like ?
+order by book_id, 
+chapter, 
+verse
+"""
+
+  var cleanQ: string = q.toLower().strip();
+           
+  for c in "!&():;'\",.?":
+    cleanQ = cleanQ.replace($c, "%");
+
+  cleanQ = "%" & cleanQ & "%"
+
+  var rows = db.getAllRows(sql(qs), cleanQ)
+
+  var res: seq[string]
+
+  for row in rows:
+    res.add(row[0])
+
+  return res
+
+  
 # get database rows for a range of verses
 proc getBibleRows(rng: Range): seq[Row] =
   return db.getAllRows(sql"""
@@ -450,9 +507,18 @@ for kind, key, val in p.getOpt():
           stdErr.write("Invalid reference '" & val & "': " & r.invalidMessage())
           quit(1)
         
-        
       of "help", "h":
         echo usage
+        quit()
+
+      of "words", "w":
+        for s in searchForWords(val):
+          echo s
+        quit()
+        
+      of "phrase", "r":
+        for s in searchForPhrase(val):
+          echo s
         quit()
         
       else:
