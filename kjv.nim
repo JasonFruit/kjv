@@ -443,6 +443,10 @@ discarded.
                       as HTML
   -l, --latex         Print the text of the specified Bible passage
                       as LaTeX
+  -w, --words         Search for words and return a list of
+                      references
+  -r, --phrase        Search for a phrase and return a list of
+                      references
   --help              Display this usage guide
 
 """
