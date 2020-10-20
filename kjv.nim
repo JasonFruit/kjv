@@ -516,13 +516,11 @@ for kind, key, val in p.getOpt():
         quit()
 
       of "words", "w":
-        for s in searchForWords(val):
-          echo s
+        stdout.write(searchForWords(val).join("\n"))
         quit()
         
       of "phrase", "r":
-        for s in searchForPhrase(val):
-          echo s
+        stdout.write(searchForPhrase(val).join("\n"))
         quit()
         
       else:
