@@ -353,6 +353,15 @@ proc getBibleText(r: Ref): string =
   except:
     return getBibleText(((Verse)r).toRange())
 
+proc getBibleMarkdown(r: Ref): string =
+  var text = getBibleText(r)
+
+  text = text.replace("\n", "  \n")
+  text = text.replace("[", "_").replace("]", "_")
+  text = text.replace("<<", "**").replace(">>", "**\n\n")
+
+  return text  
+
 # return Bible text as HTML for a range of verses
 proc getBibleHtml(rng: Range): string =
   var res: string = ""
@@ -439,6 +448,8 @@ discarded.
                       book and chapter
   -p, --passage       Print the text of the specified Bible passage
                       as plain text
+  -d, --markdown      Print the text of the specified Bible passage
+                      as Markdown
   -m, --html          Print the text of the specified Bible passage
                       as HTML
   -l, --latex         Print the text of the specified Bible passage
@@ -506,6 +517,16 @@ for kind, key, val in p.getOpt():
         
         if r.isValid():
           echo getBibleLatex(r)
+          quit()
+        else:
+          stdErr.write("Invalid reference '" & val & "': " & r.invalidMessage())
+          quit(1)
+
+      of "markdown", "d":
+        var r = parseRef(val)
+
+        if r.isValid():
+          echo getBibleMarkdown(r)
           quit()
         else:
           stdErr.write("Invalid reference '" & val & "': " & r.invalidMessage())

@@ -2,8 +2,8 @@ kjv
 ======================================================================
 
 A command-line tool to output information about the King James Bible,
-and supply its text in various formats, currently plain text, HTML,
-and LaTeX.
+and supply its text in various formats, currently plain text,
+Markdown, HTML, and LaTeX.
 
 Usage: kjv OPTION
 ----------------------------------------------------------------------
@@ -21,6 +21,8 @@ Usage: kjv OPTION
 						  book and chapter
 	  -p, --passage       Print the text of the specified Bible passage
 						  as plain text
+	  -d, --markdown      Print the text of the specified Bible passage
+						  as Markdown
 	  -m, --html          Print the text of the specified Bible passage
 						  as HTML
 	  -l, --latex         Print the text of the specified Bible passage
